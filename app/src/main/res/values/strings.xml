@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Orgalife</string>
+    <string name="EMail">E-Mail</string>
+    <string name="Contrasenia">Contraseña</string>
+    <string name="MenuLateral">Menu</string>
+    <string name="Comunidad">Comunidad</string>
+    <string name="Completadas">Completadas</string>
+    <string name="Grupo">Grupo</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Cuenta">Cuenta</string>
+    <string name="Configuracion">Configuración</string>
+    <string name="Terminos">Terminos de Uso</string>
+    <string name="Abrir_Drawer">Abrir Drawer</string>
+    <string name="Cerrar_Drawer">Cerrar Drawer</string>
+    <string name="LogOut">Cerrar Sesion</string>
+    <string name="Recordar">Recordar Usuario</string>
+    <string name="Crear">Crear</string>
+    <string name="Publico">Publico</string>
+    <string name="Privado">Privado</string>
+    <string name="Etiquetas">Etiquetas</string>
+    <string name="Propias">Propias</string>
+</resources>

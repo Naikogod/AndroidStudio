@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "230931012732",
+    "project_id": "orgalife-92dec",
+    "storage_bucket": "orgalife-92dec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230931012732:android:97ea261bd0685b3cedbdf9",
+        "android_client_info": {
+          "package_name": "com.example.orgalife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWBLkBEZOI851UxdI9QwMU1y9kTlnMeEQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

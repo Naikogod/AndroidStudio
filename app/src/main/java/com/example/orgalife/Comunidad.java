@@ -1,5 +1,7 @@
 package com.example.orgalife;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -51,12 +53,21 @@ public class Comunidad extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_comunidad, container, false);
 
-        db = FirebaseFirestore.getInstance();
-        recyclerView = v.findViewById(R.id.ListaComunidad);
+        recyclerView = v.findViewById(R.id.ListaComunidad); // Mueve esta línea arriba
+
         tareas = new ArrayList<>();
         tareaAdapter = new TareaAdapter(requireContext(), tareas);
-
         recyclerView.setAdapter(tareaAdapter);
+
+        tareaAdapter.setOnItemClickListener(new TareaAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                mostrarDialogo(tareas.get(position).getNombre());
+            }
+        });
+
+        db = FirebaseFirestore.getInstance();
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutManager);
 
@@ -101,5 +112,25 @@ public class Comunidad extends Fragment {
                         tareaAdapter.notifyDataSetChanged();
                     }
                 });
+    }
+
+    private void mostrarDialogo(final String nombreTarea) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setMessage("¿Se quiere añadir al Grupo?");
+        builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // El usuario eligió "Sí", mostrar Toast con el nombre de la tarea
+                Toast.makeText(requireContext(), "Nombre de la tarea: " + nombreTarea, Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // El usuario eligió "No", cierra el diálogo
+                dialog.dismiss();
+            }
+        });
+        builder.create().show();
     }
 }

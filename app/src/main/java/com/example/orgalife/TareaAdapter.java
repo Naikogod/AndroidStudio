@@ -21,6 +21,17 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         this.tareas = tareas;
     }
 
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    private OnItemClickListener clickListener;
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        clickListener = listener;
+    }
+
+
     @NonNull
     @Override
     public TareaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,6 +54,18 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                 .placeholder(R.drawable.imagen_predeterminada) // Recurso predeterminado si la imagen no se carga
                 .error(R.drawable.imagen_predeterminada) // Recurso a mostrar si hay un error
                 .into(holder.imageViewTarea); // ImageView donde se mostrará la imagen
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (clickListener != null) {
+                    int position = holder.getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        clickListener.onItemClick(position);
+                    }
+                }
+            }
+        });
     }
 
     @Override

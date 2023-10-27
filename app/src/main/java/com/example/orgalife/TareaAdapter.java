@@ -22,7 +22,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
     }
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(int position, String nombreDocumento);
     }
 
     private OnItemClickListener clickListener;
@@ -30,7 +30,6 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
     public void setOnItemClickListener(OnItemClickListener listener) {
         clickListener = listener;
     }
-
 
     @NonNull
     @Override
@@ -47,13 +46,12 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.textViewDescripcionTarea.setText(tarea.getDescripcion());
         holder.textViewEtiquetaTarea.setText(tarea.getEtiqueta());
 
-        // Cargar la imagen usando Glide
         Glide.with(context)
-                .load(tarea.getImageUrl()) // URL de la imagen
-                .fitCenter() // Ajusta la imagen al tamaño del ImageView manteniendo la relación de aspecto
-                .placeholder(R.drawable.imagen_predeterminada) // Recurso predeterminado si la imagen no se carga
-                .error(R.drawable.imagen_predeterminada) // Recurso a mostrar si hay un error
-                .into(holder.imageViewTarea); // ImageView donde se mostrará la imagen
+                .load(tarea.getImageUrl())
+                .fitCenter()
+                .placeholder(R.drawable.imagen_predeterminada)
+                .error(R.drawable.imagen_predeterminada)
+                .into(holder.imageViewTarea);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,7 +59,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
                 if (clickListener != null) {
                     int position = holder.getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        clickListener.onItemClick(position);
+                        clickListener.onItemClick(position, tarea.getNombreDocumento());
                     }
                 }
             }
@@ -88,4 +86,3 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         }
     }
 }
-

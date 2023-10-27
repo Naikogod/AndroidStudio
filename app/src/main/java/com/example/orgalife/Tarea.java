@@ -5,16 +5,16 @@ public class Tarea {
     private String descripcion;
     private String etiqueta;
     private String imageUrl;
+    private String nombreDocumento;
 
-    // Constructor
-    public Tarea(String nombre, String descripcion, String etiqueta, String imageUrl) {
+    public Tarea(String nombre, String descripcion, String etiqueta, String imageUrl, String nombreDocumento) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.etiqueta = etiqueta;
         this.imageUrl = imageUrl;
+        this.nombreDocumento = nombreDocumento;
     }
 
-    // Getter y Setter para el nombre
     public String getNombre() {
         return nombre;
     }
@@ -23,7 +23,6 @@ public class Tarea {
         this.nombre = nombre;
     }
 
-    // Getter y Setter para la descripción
     public String getDescripcion() {
         return descripcion;
     }
@@ -32,7 +31,6 @@ public class Tarea {
         this.descripcion = descripcion;
     }
 
-    // Getter y Setter para la etiqueta
     public String getEtiqueta() {
         return etiqueta;
     }
@@ -41,12 +39,15 @@ public class Tarea {
         this.etiqueta = etiqueta;
     }
 
-    // Getter y Setter para la URL de la imagen
     public String getImageUrl() {
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getNombreDocumento() {
+        return nombreDocumento;
     }
 }

@@ -84,7 +84,10 @@ public class Completadas extends Fragment {
                             String etiqueta = document.getString("etiqueta");
                             String imageUrl = document.getString("imageUrl");
 
-                            Tarea tarea = new Tarea(nombre, descripcion, etiqueta, imageUrl);
+                            // Asegúrate de obtener el nombre del documento también
+                            String nombreDocumento = document.getId();
+
+                            Tarea tarea = new Tarea(nombre, descripcion, etiqueta, imageUrl, nombreDocumento);
                             tareas.add(tarea);
                         }
 

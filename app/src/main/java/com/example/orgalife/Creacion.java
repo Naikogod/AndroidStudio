@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +45,7 @@ public class Creacion extends AppCompatActivity {
     private Spinner spinnerEtiquetas;
     private ArrayAdapter<String> etiquetasAdapter;
     private FirebaseFirestore db;
+    private String nombreDocumento; // Agregar como atributo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,7 @@ public class Creacion extends AppCompatActivity {
         setContentView(R.layout.activity_creacion);
 
         db = FirebaseFirestore.getInstance();
+        nombreDocumento = db.collection("tareas").document().getId(); // Genera un ID único
 
         imageView = findViewById(R.id.imageView);
         editTextNombre = findViewById(R.id.editTextNombre);
@@ -120,11 +123,15 @@ public class Creacion extends AppCompatActivity {
         tarea.put("imageUrl", imageUrl);
         tarea.put("tipoTarea", tipoTarea);
         tarea.put("creadorId", creadorId); // Asigna el UID del usuario como creador
+        tarea.put("grupos", new ArrayList<String>()); // Inicializa la lista de "Grupos" como vacía
 
-        tareasCollection.add(tarea)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        // Utiliza el nombre del documento generado
+        DocumentReference documentReference = tareasCollection.document(nombreDocumento);
+
+        documentReference.set(tarea) // Usar "set" en lugar de "add"
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
+                    public void onSuccess(Void aVoid) {
                         // La tarea se ha guardado con éxito en Firestore.
                         mostrarToastYTerminar();
                     }

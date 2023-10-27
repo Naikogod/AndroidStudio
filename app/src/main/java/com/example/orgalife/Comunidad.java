@@ -1,6 +1,5 @@
 package com.example.orgalife;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,13 +8,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.orgalife.R;
+import com.example.orgalife.Tarea;
+import com.example.orgalife.TareaAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -31,6 +38,9 @@ public class Comunidad extends Fragment {
     private TareaAdapter tareaAdapter;
     private List<Tarea> tareas;
     private FirebaseFirestore db;
+
+    private int selectedPosition = -1;
+    private String selectedDocument;
 
     public Comunidad() {
     }
@@ -53,15 +63,16 @@ public class Comunidad extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_comunidad, container, false);
 
-        recyclerView = v.findViewById(R.id.ListaComunidad); // Mueve esta línea arriba
-
+        recyclerView = v.findViewById(R.id.ListaComunidad);
         tareas = new ArrayList<>();
         tareaAdapter = new TareaAdapter(requireContext(), tareas);
         recyclerView.setAdapter(tareaAdapter);
 
         tareaAdapter.setOnItemClickListener(new TareaAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(int position) {
+            public void onItemClick(int position, String nombreDocumento) {
+                selectedPosition = position;
+                selectedDocument = nombreDocumento;
                 mostrarDialogo(tareas.get(position).getNombre());
             }
         });
@@ -71,41 +82,31 @@ public class Comunidad extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        obtenerTareasPublicas(); // Filtrar tareas públicas
-
-        FloatingActionButton bt = v.findViewById(R.id.BotonFlotante1);
-        bt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Iniciar la actividad Creacion
-                Intent i = new Intent(getActivity(), Creacion.class);
-                startActivity(i);
-            }
-        });
+        obtenerTareasPublicas();
 
         return v;
     }
 
     private void obtenerTareasPublicas() {
         CollectionReference tareasRef = db.collection("tareas");
-        tareasRef.whereEqualTo("tipoTarea", "Publico") // Filtrar tareas públicas
+        tareasRef.whereEqualTo("tipoTarea", "Publico")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (error != null) {
-                            // Manejar cualquier error que pueda ocurrir.
                             return;
                         }
 
-                        tareas.clear(); // Limpiar la lista de tareas antes de agregar las nuevas.
+                        tareas.clear();
 
                         for (QueryDocumentSnapshot document : value) {
                             String nombre = document.getString("nombre");
                             String descripcion = document.getString("descripcion");
                             String etiqueta = document.getString("etiqueta");
                             String imageUrl = document.getString("imageUrl");
+                            String nombreDocumento = document.getId();
 
-                            Tarea tarea = new Tarea(nombre, descripcion, etiqueta, imageUrl);
+                            Tarea tarea = new Tarea(nombre, descripcion, etiqueta, imageUrl, nombreDocumento);
                             tareas.add(tarea);
                         }
 
@@ -120,17 +121,47 @@ public class Comunidad extends Fragment {
         builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // El usuario eligió "Sí", mostrar Toast con el nombre de la tarea
-                Toast.makeText(requireContext(), "Nombre de la tarea: " + nombreTarea, Toast.LENGTH_SHORT).show();
+                if (selectedPosition != -1) {
+                    int position = selectedPosition;
+                    String nombreDocumento = selectedDocument;
+                    DocumentReference tareaRef = db.collection("tareas").document(nombreDocumento);
+
+                    // Agrega el UID del usuario a la lista "Grupos" de la tarea
+                    String uidUsuario = getCurrentUserId();
+                    if (uidUsuario != null) {
+                        tareaRef.update("grupos", FieldValue.arrayUnion(uidUsuario))
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(requireContext(), "Tarea actualizada con éxito", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Toast.makeText(requireContext(), "Error al actualizar la tarea", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                }
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // El usuario eligió "No", cierra el diálogo
                 dialog.dismiss();
             }
         });
         builder.create().show();
     }
+
+    private String getCurrentUserId() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            return currentUser.getUid();
+        } else {
+            return null;
+        }
+    }
 }
+

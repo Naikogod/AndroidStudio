@@ -72,7 +72,7 @@ public class Completadas extends Fragment {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (error != null) {
-                            // Manejar cualquier error que pueda ocurrir.
+                            // Manejar cualquier error que pueda ocurrir, Normalmente utilize toast
                             return;
                         }
 

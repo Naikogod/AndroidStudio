@@ -1,64 +1,91 @@
 package com.example.orgalife;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Grupo#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.orgalife.Tarea;
+import com.example.orgalife.TareaAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Grupo extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private RecyclerView recyclerView;
+    private TareaAdapter tareaAdapter;
+    private List<Tarea> tareas;
+    private FirebaseFirestore db;
+    private String currentUserId;
 
     public Grupo() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Grupo.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Grupo newInstance(String param1, String param2) {
-        Grupo fragment = new Grupo();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_grupo, container, false);
+        View v = inflater.inflate(R.layout.fragment_grupo, container, false);
+
+        recyclerView = v.findViewById(R.id.ListaGrupo);
+        tareas = new ArrayList<>();
+        tareaAdapter = new TareaAdapter(requireContext(), tareas);
+        recyclerView.setAdapter(tareaAdapter);
+
+        // Obtén el UID del usuario actual
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            currentUserId = currentUser.getUid();
+        } else {
+            // El usuario no está autenticado. Maneja esta situación según tus necesidades.
+        }
+
+        db = FirebaseFirestore.getInstance();
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        obtenerTareasGrupos(); // Obtener tareas según la pertenencia a grupos
+
+        return v;
+    }
+
+    private void obtenerTareasGrupos() {
+        CollectionReference tareasRef = db.collection("tareas");
+        Query query = tareasRef.whereArrayContains("grupos", currentUserId);
+
+        query.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                // Manejar errores, si los hay.
+                return;
+            }
+
+            tareas.clear(); // Limpiar la lista de tareas antes de agregar las nuevas.
+
+            for (QueryDocumentSnapshot document : value) {
+                String nombre = document.getString("nombre");
+                String descripcion = document.getString("descripcion");
+                String etiqueta = document.getString("etiqueta");
+                String imageUrl = document.getString("imageUrl");
+                String nombreDocumento = document.getId();
+
+                Tarea tarea = new Tarea(nombre, descripcion, etiqueta, imageUrl, nombreDocumento);
+                tareas.add(tarea);
+            }
+
+            tareaAdapter.notifyDataSetChanged();
+        });
     }
 }

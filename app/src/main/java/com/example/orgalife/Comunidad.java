@@ -17,6 +17,7 @@ import com.example.orgalife.Tarea;
 import com.example.orgalife.TareaAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -83,6 +84,16 @@ public class Comunidad extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         obtenerTareasPublicas();
+
+        FloatingActionButton bt = v.findViewById(R.id.BotonFlotante1);
+        bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Iniciar la actividad Creacion
+                Intent i = new Intent(getActivity(), Creacion.class);
+                startActivity(i);
+            }
+        });
 
         return v;
     }

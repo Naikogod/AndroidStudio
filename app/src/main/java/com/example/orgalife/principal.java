@@ -28,7 +28,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class principal extends AppCompatActivity {
+public class principal extends AppCompatActivity implements Grupo.OnTareaClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +36,7 @@ public class principal extends AppCompatActivity {
         setContentView(R.layout.activity_principal);
         Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(tb);
+
         // Fragmentos
         TabLayout tl = (TabLayout) findViewById(R.id.tablayout);
         tl.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -90,6 +91,7 @@ public class principal extends AppCompatActivity {
                 }
             }
         });
+
         // Menu Lateral
         NavigationView nav = (NavigationView) findViewById(R.id.nav);
         nav.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -121,7 +123,7 @@ public class principal extends AppCompatActivity {
             }
         });
 
-        // Configuración del menú lateral Cuando está escondido etc.
+        // Configuración del menú lateral Cuando está escondido, etc.
         DrawerLayout dl = (DrawerLayout) findViewById(R.id.drawer_principal);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -141,7 +143,7 @@ public class principal extends AppCompatActivity {
                 if (dl.isDrawerOpen(GravityCompat.START)) {
                     dl.closeDrawer(GravityCompat.START);
                 } else {
-                    dl.openDrawer((int) Gravity.START);
+                    dl.openDrawer(GravityCompat.START);
                 }
             }
         });
@@ -192,4 +194,25 @@ public class principal extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu1, menu);
         return true;
     }
+
+    // Implementa el método onTareaClicked para manejar el clic en una tarea
+    @Override
+    public void onTareaClicked(Tarea tarea) {
+        // Reemplazar el fragmento Grupo por el fragmento Comentarios
+        Comentarios comentariosFragment = new Comentarios();
+
+        // Configura los argumentos con el nombre de la tarea
+        Bundle args = new Bundle();
+        args.putString("nombreTarea", tarea.getNombre());
+        comentariosFragment.setArguments(args);
+
+        // Iniciar una transacción de fragmento
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenedor_principal, comentariosFragment)
+                .addToBackStack(null) // Opcional: permite volver al fragmento anterior con el botón Atrás
+                .commit();
+    }
 }
+
+

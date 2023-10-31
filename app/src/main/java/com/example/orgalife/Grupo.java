@@ -1,5 +1,6 @@
 package com.example.orgalife;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,13 +19,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Grupo extends Fragment {
+public class Grupo extends Fragment implements TareaAdapter.OnItemClickListener {
+    // Interfaz Para comunicar
+    public interface OnTareaClickListener {
+        void onTareaClicked(Tarea tarea);
+    }
 
+    private OnTareaClickListener tareaClickListener;
     private RecyclerView recyclerView;
     private TareaAdapter tareaAdapter;
     private List<Tarea> tareas;
@@ -42,6 +47,7 @@ public class Grupo extends Fragment {
         recyclerView = v.findViewById(R.id.ListaGrupo);
         tareas = new ArrayList<>();
         tareaAdapter = new TareaAdapter(requireContext(), tareas);
+        tareaAdapter.setOnItemClickListener(this); // Establece el listener en el adaptador
         recyclerView.setAdapter(tareaAdapter);
 
         // Obtén el UID del usuario actual
@@ -88,4 +94,25 @@ public class Grupo extends Fragment {
             tareaAdapter.notifyDataSetChanged();
         });
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            tareaClickListener = (OnTareaClickListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " debe implementar la interfaz OnTareaClickListener");
+        }
+    }
+
+    @Override
+    public void onItemClick(int position, String nombreDocumento) {
+        Tarea tarea = tareas.get(position);
+
+        if (tareaClickListener != null) {
+            tareaClickListener.onTareaClicked(tarea);
+        }
+    }
 }
+
+

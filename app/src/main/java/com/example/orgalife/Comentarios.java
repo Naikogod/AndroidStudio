@@ -18,19 +18,20 @@ public class Comentarios extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_comentarios, container, false);
 
-        // Obtén los argumentos (nombre de la tarea) del fragmento
+        // Obtén el argumento (nombreDocumento) del fragmento
         Bundle args = getArguments();
         if (args != null) {
-            String nombreTarea = args.getString("nombreTarea");
-            if (nombreTarea != null) {
+            String nombreDocumento = args.getString("nombreDocumento");
+            if (nombreDocumento != null) {
                 // Encuentra el TextView en tu diseño
                 TextView textViewTaskName = v.findViewById(R.id.textViewTaskName);
 
-                // Muestra el nombre de la tarea en el TextView
-                textViewTaskName.setText(nombreTarea);
+                // Muestra el nombre del documento en el TextView
+                textViewTaskName.setText(nombreDocumento);
             }
         }
 
         return v;
     }
 }
+

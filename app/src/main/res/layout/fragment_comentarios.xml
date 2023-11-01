@@ -10,9 +10,9 @@
         android:id="@+id/textViewTaskName"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="#FF0000"
-        android:textColorHighlight="#FF0000"
-        android:textColorHint="#FF0000"
-        android:textColorLink="#FF0000" />
+        android:textColor="#FFFFFF"
+        android:textColorHighlight="#FFFFFF"
+        android:textColorHint="#FFFFFF"
+        android:textColorLink="#FFFFFF" />
 
 </FrameLayout>

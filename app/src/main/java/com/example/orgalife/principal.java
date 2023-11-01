@@ -201,9 +201,9 @@ public class principal extends AppCompatActivity implements Grupo.OnTareaClickLi
         // Reemplazar el fragmento Grupo por el fragmento Comentarios
         Comentarios comentariosFragment = new Comentarios();
 
-        // Configura los argumentos con el nombre de la tarea
+        // Configura los argumentos con el "nombreDocumento" de la tarea
         Bundle args = new Bundle();
-        args.putString("nombreTarea", tarea.getNombre());
+        args.putString("nombreDocumento", tarea.getNombreDocumento()); // Utiliza el "nombreDocumento" en lugar del "nombreTarea"
         comentariosFragment.setArguments(args);
 
         // Iniciar una transacción de fragmento

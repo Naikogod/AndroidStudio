@@ -4,24 +4,33 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Comentarios extends Fragment {
+
+    private ComentarioAdapter comentarioAdapter;
+    private String nombreDocumento; // Variable para almacenar el nombre del documento de la tarea
 
     public Comentarios() {
         // Constructor vacío requerido.
@@ -31,16 +40,30 @@ public class Comentarios extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_comentarios, container, false);
 
-
         FloatingActionButton botonCrearComentario = v.findViewById(R.id.crearComentario);
         botonCrearComentario.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Antes de mostrar el cuadro de diálogo para crear un comentario, asegúrate de que la colección "Comentarios" exista.
                 crearColeccionComentarios();
                 mostrarDialogoCrearComentario();
             }
         });
+
+        RecyclerView recyclerView = v.findViewById(R.id.recyclerViewComentarios);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        comentarioAdapter = new ComentarioAdapter(new ArrayList<>());
+        recyclerView.setAdapter(comentarioAdapter);
+
+        Bundle args = getArguments();
+        if (args != null) {
+            nombreDocumento = args.getString("nombreDocumento");
+        }
+
+        if (nombreDocumento != null) {
+            cargarComentariosDeLaTarea();
+        } else {
+            Log.d("Comentarios", "Nombre del documento no proporcionado");
+        }
 
         return v;
     }
@@ -54,10 +77,9 @@ public class Comentarios extends Fragment {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult().isEmpty()) {
-                        // La colección "Comentarios" no existe, por lo que la creamos.
                         comentariosCollection
                                 .document("dummyDocument")
-                                .set(new HashMap<>()) // Puedes usar un documento vacío o con datos mínimos
+                                .set(new HashMap<>())
                                 .addOnCompleteListener(result -> {
                                     if (result.isSuccessful()) {
                                         // La colección "Comentarios" ha sido creada.
@@ -81,23 +103,14 @@ public class Comentarios extends Fragment {
         builder.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // Recoge el comentario ingresado por el usuario desde editTextComentario.
                 String comentario = editTextComentario.getText().toString();
 
-                // Comprueba que el comentario no esté vacío.
                 if (!TextUtils.isEmpty(comentario)) {
-                    // Obtiene el nombre del usuario actual desde Firebase Authentication.
                     FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                     String nombreUsuario = currentUser != null ? currentUser.getEmail().split("@")[0] : "NombreDesconocido";
 
-                    // Obtiene el nombre del documento (tarea) desde los argumentos del fragmento.
-                    Bundle args = getArguments();
-                    String nombreDocumento = args != null ? args.getString("nombreDocumento", "NombreDesconocido") : "NombreDesconocido";
-
-                    // Guarda el comentario en Firestore.
                     guardarComentarioEnFirestore(nombreUsuario, nombreDocumento, comentario);
                 } else {
-                    // Muestra un mensaje de error al usuario indicando que el comentario está vacío.
                     Toast.makeText(requireContext(), "El comentario no puede estar vacío", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -106,7 +119,7 @@ public class Comentarios extends Fragment {
         builder.setNegativeButton("Cerrar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss(); // Cierra el cuadro de diálogo
+                dialog.dismiss();
             }
         });
 
@@ -118,26 +131,52 @@ public class Comentarios extends Fragment {
     private void guardarComentarioEnFirestore(String nombreUsuario, String nombreDocumento, String comentario) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference comentariosCollection = db.collection("Comentarios");
-
-        // Crea un nuevo documento para el comentario con un ID automático.
         DocumentReference nuevoComentario = comentariosCollection.document();
 
-        // Crea un mapa con los datos del comentario.
         Map<String, Object> datosComentario = new HashMap<>();
         datosComentario.put("nombreUsuario", nombreUsuario);
         datosComentario.put("nombreDocumento", nombreDocumento);
         datosComentario.put("comentario", comentario);
 
-        // Guarda el mapa de datos en Firestore.
         nuevoComentario.set(datosComentario)
                 .addOnSuccessListener(aVoid -> {
-                    // El comentario se ha guardado exitosamente.
                     Toast.makeText(requireContext(), "Comentario enviado con éxito", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Maneja posibles errores al guardar el comentario.
                     Toast.makeText(requireContext(), "Error al enviar el comentario", Toast.LENGTH_SHORT).show();
                 });
     }
-}
 
+    // Método para cargar y mostrar los comentarios de la tarea con el nombreDocumento
+    // Método para cargar y mostrar los comentarios de la tarea con el nombreDocumento
+    private void cargarComentariosDeLaTarea() {
+        List<Comentario> comentarios = new ArrayList<>();
+        Log.d("Comentarios", "Nombre del documento a buscar: " + nombreDocumento);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference comentariosCollection = db.collection("Comentarios");
+
+        comentariosCollection
+                .whereEqualTo("nombreDocumento", nombreDocumento)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        comentarios.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String nombreUsuario = document.getString("nombreUsuario");
+                            String comentario = document.getString("comentario");
+                            comentarios.add(new Comentario(nombreUsuario, comentario));
+                            Log.d("Comentarios", "Comentario agregado: " + comentario);
+                        }
+                        // Actualiza la lista de comentarios en el adaptador
+                        // Actualiza la lista de comentarios en el adaptador
+                        comentarioAdapter.setComentarios(comentarios);
+                        comentarioAdapter.notifyDataSetChanged();
+                        Log.d("Comentarios", "Notificando al adaptador que los datos han cambiado");
+                    } else {
+                        Toast.makeText(requireContext(), "Error al obtener comentarios", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+}

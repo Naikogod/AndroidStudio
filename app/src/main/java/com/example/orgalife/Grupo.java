@@ -114,5 +114,3 @@ public class Grupo extends Fragment implements TareaAdapter.OnItemClickListener 
         }
     }
 }
-
-

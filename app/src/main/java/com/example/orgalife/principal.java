@@ -30,6 +30,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class principal extends AppCompatActivity implements Grupo.OnTareaClickListener {
 
+    private NavigationView nav;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +95,7 @@ public class principal extends AppCompatActivity implements Grupo.OnTareaClickLi
         });
 
         // Menu Lateral
-        NavigationView nav = (NavigationView) findViewById(R.id.nav);
+        nav = (NavigationView) findViewById(R.id.nav);
         nav.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -148,16 +150,22 @@ public class principal extends AppCompatActivity implements Grupo.OnTareaClickLi
             }
         });
 
-        // Recuperar el usuario actual
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Llama al método para actualizar el menú lateral
+        actualizarMenuLateral();
+    }
+
+    // Método para actualizar el menú lateral con la imagen de perfil y nombre del usuario
+    private void actualizarMenuLateral() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             String uid = user.getUid();
-
-            // Referencia a Firestore
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            // Obtener la imagen de perfil y el nombre del usuario desde Firestore
             db.collection("usuarios")
                     .document(uid)
                     .get()
@@ -165,19 +173,12 @@ public class principal extends AppCompatActivity implements Grupo.OnTareaClickLi
                         if (task.isSuccessful()) {
                             DocumentSnapshot document = task.getResult();
                             if (document.exists()) {
-                                // Recuperar la URL de la imagen de perfil y el nombre del usuario
                                 String imageUrl = document.getString("imageUrl");
                                 String email = user.getEmail();
                                 String username = email.substring(0, email.indexOf("@"));
-
-                                // Establecer la imagen y el nombre en el header
                                 ImageView headerImageView = nav.getHeaderView(0).findViewById(R.id.headerImageView);
                                 TextView headerTextView = nav.getHeaderView(0).findViewById(R.id.headerTextView);
 
-                                // Glide es una biblioteca de carga de imágenes que puedes usar para cargar la imagen
-                                // Puedes agregar la dependencia en tu archivo build.gradle
-                                // implementation 'com.github.bumptech.glide:glide:4.12.0'
-                                // y luego cargar la imagen con Glide
                                 Glide.with(this)
                                         .load(imageUrl)
                                         .into(headerImageView);
@@ -214,5 +215,3 @@ public class principal extends AppCompatActivity implements Grupo.OnTareaClickLi
                 .commit();
     }
 }
-
-

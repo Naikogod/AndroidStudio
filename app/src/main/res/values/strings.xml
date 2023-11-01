@@ -20,4 +20,6 @@
     <string name="Privado">Privado</string>
     <string name="Etiquetas">Etiquetas</string>
     <string name="Propias">Propias</string>
+    <string name="Usuario">Usuario:</string>
+    <string name="Comentario">Comentario</string>
 </resources>
